@@ -1,6 +1,14 @@
-export default function handler(req, res) {
-  res.json([
-    { id: 1, title: 'Olivewood Board Small', description: 'Kleine Schneidbrett aus Olivenholz', priceCents: 2490, currency: 'EUR' },
-    { id: 2, title: 'Olivewood Spoon', description: 'Handgefertigter Löffel', priceCents: 1990, currency: 'EUR' }
-  ])
+import prisma from '../../lib/prisma'
+
+export default async function handler(req, res) {
+  try {
+    const products = await prisma.product.findMany({
+      where: { stock: { gt: 0 } }, // Nur verfügbare Produkte
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json(products);
+  } catch (error) {
+    console.error('products API error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
 }

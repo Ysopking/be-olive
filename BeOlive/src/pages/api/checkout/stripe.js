@@ -8,6 +8,16 @@ export default async function handler(req,res){
   const items = body.items || []
   const acceptedTerms = body.acceptedTerms
   if (!acceptedTerms) return res.status(400).json({ error: 'terms_not_accepted' })
+
+  // Validiere Preise gegen DB
+  for (const it of items) {
+    if (!it.productId) continue;
+    const product = await prisma.product.findUnique({ where: { id: it.productId } });
+    if (!product) return res.status(400).json({ error: 'product_not_found', productId: it.productId });
+    if (product.priceCents !== it.priceCents) return res.status(400).json({ error: 'price_mismatch', productId: it.productId });
+    if (product.stock < it.quantity) return res.status(400).json({ error: 'insufficient_stock', productId: it.productId });
+  }
+
   const itemsTotal = items.reduce((s,it)=> s + (it.priceCents||0)*(it.quantity||1), 0)
   const shipping = 490
   const totalCents = itemsTotal + shipping

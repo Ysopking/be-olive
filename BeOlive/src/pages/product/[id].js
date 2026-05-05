@@ -1,7 +1,10 @@
 import { useContext } from 'react'
 import { CartContext } from '../../context/cart'
+import prisma from '../../lib/prisma'
+
 export default function ProductPage({ product }) {
   const { addItem } = useContext(CartContext)
+  if (!product) return <div className="container"><p>Produkt nicht gefunden</p></div>
   function addToCart(){ addItem({ productId: product.id, title: product.title, priceCents: product.priceCents, currency: product.currency||'EUR', quantity: 1 }); alert('Produkt zum Warenkorb hinzugefügt') }
   return (
     <div className="container">
@@ -14,7 +17,17 @@ export default function ProductPage({ product }) {
     </div>
   )
 }
+
 ProductPage.getInitialProps = async ({ query }) => {
-  const id = Number(query.id || 1)
-  return { product: { id, title: 'Olivewood Item', description: 'Wunderschön verarbeitetes Olivenholz.', priceCents: 4990, currency: 'EUR' } }
+  const id = Number(query.id)
+  if (!id) return { product: null }
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id }
+    })
+    return { product }
+  } catch (error) {
+    console.error('Product fetch error:', error)
+    return { product: null }
+  }
 }

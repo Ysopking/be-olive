@@ -62,3 +62,30 @@ model ProductAnalysis {
   totalSold  Int      @default(0)
   lastSoldAt DateTime?
 }
+
+model User {
+  id            Int       @id @default(autoincrement())
+  email         String    @unique
+  passwordHash  String
+  role          String    @default("customer")
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Alert {
+  id          Int      @id @default(autoincrement())
+  type        String   // 'low_stock', 'payment_failed', etc.
+  message     String
+  productId   Int?
+  orderId     Int?
+  resolved    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}

@@ -16,11 +16,39 @@ export default async function handler(req,res){
       const items = (lineItems.data||[]).map(li=>({ productId: Number(li.price?.product)||null, title: li.description || 'Item', priceCents: Number(li.price?.unit_amount|| li.amount_subtotal||0), quantity: Number(li.quantity||1) }))
       const orderId = session.metadata?.orderId ? Number(session.metadata.orderId) : null
       if(orderId){
-        await prisma.order.update({ where:{ id: orderId }, data:{ paid: true, status:'paid' } })
-        for(const it of items){ try{ if(it.productId) await prisma.product.updateMany({ where:{ id: it.productId }, data: { stock: { decrement: it.quantity } } }) }catch(e){console.warn('stock update failed', e.message)} }
-        const total = Number(session.amount_total || items.reduce((s,i)=> s + (i.priceCents||0)*(i.quantity||1),0))
-        await createAccountingEntry({ orderId, amountCents: total, type: 'sale', description: `Sale via Stripe ${session.id}` })
-        for(const it of items){ try{ if(!it.productId) continue; await prisma.productAnalysis.upsert({ where: { productId: it.productId }, update: { totalSold: { increment: it.quantity } }, create: { productId: it.productId, totalSold: it.quantity, lastSoldAt: new Date() } }) }catch(e){console.warn('analysis failed', e.message)} }
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({ where:{ id: orderId }, data:{ paid: true, status:'paid' } })
+          for(const it of items){
+            if(it.productId) {
+              const updatedProduct = await tx.product.update({
+                where: { id: it.productId },
+                data: { stock: { decrement: it.quantity } },
+                select: { stock: true, title: true }
+              })
+              // Automatischer Alert bei Low Stock
+              if (updatedProduct.stock <= 5) {
+                await tx.alert.create({
+                  data: {
+                    type: 'low_stock',
+                    message: `Produkt "${updatedProduct.title}" hat nur noch ${updatedProduct.stock} Stück auf Lager.`,
+                    productId: it.productId
+                  }
+                })
+              }
+            }
+          }
+          const total = Number(session.amount_total || items.reduce((s,i)=> s + (i.priceCents||0)*(i.quantity||1),0))
+          await createAccountingEntry({ orderId, amountCents: total, type: 'sale', description: `Sale via Stripe ${session.id}` })
+          for(const it of items){
+            if(it.productId) {
+              await tx.productAnalysis.upsert({
+                where: { productId: it.productId },
+                update: { totalSold: { increment: it.quantity }, lastSoldAt: new Date() },
+                create: { productId: it.productId, totalSold: it.quantity, lastSoldAt: new Date() }
+              })
+            }
+          }
+        })
       }
     }catch(e){ console.error('Error processing webhook', e); return res.status(500).send('internal error') }
   }
