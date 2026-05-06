@@ -1,0 +1,64 @@
+Kundenfunktionen:
+
+1. Produktübersicht und Suche
+   - Kunden können Produkte im Shop durchsuchen.
+   - Filter- und Sortieroptionen helfen beim Finden passender Produkte.
+   - Produktkarten zeigen Preis, Titel und Bild.
+
+2. Produktdetailseite
+   - Kunden sehen einzelne Produktdetails, Bilder, Beschreibung und Lagerbestand.
+   - Menge lässt sich auswählen und das Produkt kann in den Warenkorb gelegt werden.
+
+3. Warenkorb
+   - Kunden können Produkte zum Warenkorb hinzufügen, Menge ändern oder entfernen.
+   - Der Warenkorb bleibt im Browser gespeichert.
+   - Übersicht über Zwischensumme und Versandkosten.
+
+4. Checkout
+   - Checkout-Seite sammelt E-Mail und Lieferadresse.
+   - Kunden müssen AGB und Datenschutz akzeptieren, bevor sie bezahlen.
+   - Wahl zwischen Stripe- und PayPal-Zahlung.
+   - Weiterleitung zum jeweiligen Zahlungsanbieter oder Mock-Checkout in Entwicklung.
+
+5. Bestellhistorie
+   - Angemeldete Kunden können ihre Bestellungen auf der Seite "Meine Bestellungen" einsehen.
+   - Bestellungen zeigen Status, Artikel, Einzelpreise und Gesamtsumme.
+
+6. Rechtliche Seiten
+   - Öffentliche Seiten für Impressum, AGB, Datenschutz und Widerruf.
+   - Dynamisches Laden des Inhalts über API-Endpoints.
+
+Admin-Funktionen:
+
+1. Admin-Login und Zugangsschutz
+   - Admins melden sich mit E-Mail und Passwort an.
+   - JWT-Token-basierte Authentifizierung schützt Admin-APIs.
+
+2. Produktverwaltung
+   - Admins können Produkte erstellen, bearbeiten und löschen.
+   - Produkte werden mit Titel, Preis, Lagerbestand, Bild und SKU verwaltet.
+
+3. Bestellverwaltung
+   - Admins sehen alle Bestellungen und können Status, Tracking und Rückgaben pflegen.
+   - Änderungen werden über geschützte API-Endpunkte aktualisiert.
+
+4. Compliance-Management
+   - Admins verwalten rechtliche Seiten zentral im Adminbereich.
+   - Neue Seiten können erstellt, bestehende bearbeitet und gelöscht werden.
+   - Shop-Einstellungen (z. B. Firmenname, Adresse, Steuer-ID, E-Mail, Versand- und Zahlungsinformationen) können gepflegt werden.
+
+5. Rechtliche API-Verwaltung
+   - Admin-API für Einstellungen und rechtliche Seiten mit vollständigem CRUD-Support.
+   - Öffentliche API zum Abrufen rechtlicher Seiten per Slug.
+
+6. Rechnungs- und Audit-Grundlage
+   - Bestellungen speichern Rechnungsnummer, Zahlungsanbieter, Steuer- und Versandkosten.
+   - Audit-Log-Funktionalität erfasst Bestell- und Checkout-Aktionen.
+
+Technische Grundlagen:
+
+- Next.js-Seiten und API-Routen für Shop- und Adminfunktionen.
+- Prisma ORM für Datenbankzugriff und Schemaverwaltung.
+- JWT-Authentifizierung für alle geschützten Admin-Routen.
+- TailwindCSS für responsives Styling.
+- PayPal- und Stripe-Checkout-Integration mit Mock-Modus in Entwicklung.

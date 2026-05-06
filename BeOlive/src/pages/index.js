@@ -20,47 +20,90 @@ export default function Home() {
   }, [products, search, sortBy])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">Olivewood</h1>
-          <p className="text-gray-600">Handgefertigte Produkte aus Olivenholz</p>
+    <div className="min-h-screen bg-white">
+      {/* Hero Section */}
+      <section className="relative bg-gradient-to-br from-gray-50 to-white py-20">
+        <div className="container mx-auto px-4 text-center">
+          <h1 className="text-5xl md:text-6xl font-light text-gray-900 mb-6 tracking-tight">
+            Olivewood
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Handgefertigte Produkte aus nachhaltigem Olivenholz. Jedes Stück erzählt eine Geschichte von Tradition und Handwerkskunst.
+          </p>
+          <Link
+            href="#products"
+            className="inline-block bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200"
+          >
+            Entdecken
+          </Link>
         </div>
-      </header>
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-8 flex flex-col sm:flex-row gap-4">
-          <input
-            type="text"
-            placeholder="Produkte suchen..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          <select value={sortBy} onChange={e => setSortBy(e.target.value)} className="px-4 py-2 border border-gray-300 rounded-lg">
-            <option value="createdAt">Neueste</option>
-            <option value="priceAsc">Preis aufsteigend</option>
-            <option value="priceDesc">Preis absteigend</option>
-          </select>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProducts?.map(p => (
-            <div key={p.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-              <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                  <Link href={`/product/${p.id}`} className="hover:text-blue-600">{p.title}</Link>
-                </h2>
-                <p className="text-gray-600 mb-4">{p.description}</p>
-                <div className="flex justify-between items-center">
-                  <span className="text-2xl font-bold text-gray-900">{(p.priceCents/100).toFixed(2)} €</span>
-                  <Link href={`/product/${p.id}`} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    Ansehen
-                  </Link>
+      </section>
+
+      {/* Search & Filter */}
+      <section className="py-12 bg-gray-50" id="products">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto mb-12">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex-1">
+                <input
+                  type="text"
+                  placeholder="Produkte suchen..."
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  className="w-full px-6 py-3 border-0 rounded-2xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:outline-none transition-shadow"
+                />
+              </div>
+              <select
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}
+                className="px-6 py-3 border-0 rounded-2xl bg-white shadow-sm focus:ring-2 focus:ring-black focus:outline-none"
+              >
+                <option value="createdAt">Neueste</option>
+                <option value="priceAsc">Preis aufsteigend</option>
+                <option value="priceDesc">Preis absteigend</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Products Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProducts?.map(p => (
+              <div key={p.id} className="group bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div className="aspect-square bg-gray-100 relative overflow-hidden">
+                  {p.image && (
+                    <img
+                      src={p.image}
+                      alt={p.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  )}
+                </div>
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-black transition-colors">
+                    <Link href={`/product/${p.id}`}>{p.title}</Link>
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-2">{p.description}</p>
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold text-gray-900">{(p.priceCents/100).toFixed(2)} €</span>
+                    <Link
+                      href={`/product/${p.id}`}
+                      className="px-6 py-2 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors duration-200"
+                    >
+                      Ansehen
+                    </Link>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {filteredProducts?.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500 text-lg">Keine Produkte gefunden.</p>
             </div>
-          ))}
+          )}
         </div>
-      </main>
+      </section>
     </div>
   )
 }

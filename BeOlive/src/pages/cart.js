@@ -1,46 +1,115 @@
 import { useContext } from 'react'
+import { useRouter } from 'next/router'
 import { CartContext } from '../context/cart'
 export default function CartPage() {
+  const router = useRouter()
   const { items, removeItem, updateQuantity, totalCents, clear } = useContext(CartContext)
-  async function checkoutStripe() {
-    const res = await fetch('/api/checkout/stripe', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ items, acceptedTerms: true }) })
-    if (res.redirected) window.location.href = res.url
-    else alert('Fehler beim Checkout')
-  }
-  async function checkoutPayPal() {
-    const res = await fetch('/api/checkout/paypal', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ items, acceptedTerms: true }) })
-    if (res.redirected) window.location.href = res.url
-    else alert('Fehler beim Checkout')
+  function goToCheckout() {
+    router.push('/checkout')
   }
   return (
-    <div className="container">
-      <h1 className="text-2xl font-bold mb-4">Warenkorb</h1>
-      {items.length===0 ? <p>Dein Warenkorb ist leer.</p> : (
-        <div>
-          <ul>
-            {items.map(it => (
-              <li key={it.productId} className="flex justify-between items-center border-b py-3">
-                <div>
-                  <div className="font-semibold">{it.title}</div>
-                  <div className="text-sm text-gray-600">{(it.priceCents/100).toFixed(2)} {it.currency||'EUR'}</div>
+    <div className="min-h-screen bg-white">
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-light text-gray-900 mb-12 tracking-tight">Warenkorb</h1>
+
+          {items.length === 0 ? (
+            <div className="text-center py-24">
+              <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-light text-gray-900 mb-4">Dein Warenkorb ist leer</h2>
+              <p className="text-gray-600 mb-8">Entdecke unsere handgefertigten Olivenholz-Produkte</p>
+              <a href="/" className="inline-block bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200">
+                Shoppen
+              </a>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              {/* Cart Items */}
+              <div className="space-y-4">
+                {items.map(it => (
+                  <div key={it.productId} className="bg-white border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">{it.title}</h3>
+                        <p className="text-gray-600">{(it.priceCents/100).toFixed(2)} € pro Stück</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => updateQuantity(it.productId, Math.max(1, it.quantity - 1))}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors"
+                          >
+                            −
+                          </button>
+                          <span className="w-12 text-center font-medium">{it.quantity}</span>
+                          <button
+                            onClick={() => updateQuantity(it.productId, it.quantity + 1)}
+                            className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:border-gray-400 transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-gray-900">
+                            {(it.priceCents * it.quantity / 100).toFixed(2)} €
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => removeItem(it.productId)}
+                          className="w-8 h-8 rounded-full border border-red-200 flex items-center justify-center hover:border-red-300 hover:bg-red-50 transition-colors ml-4"
+                        >
+                          <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Order Summary */}
+              <div className="bg-gray-50 rounded-3xl p-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-6">Bestellübersicht</h2>
+                <div className="space-y-3 mb-6">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Zwischensumme</span>
+                    <span className="font-medium">{(totalCents/100).toFixed(2)} €</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Versand</span>
+                    <span className="font-medium">4.90 €</span>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div className="flex justify-between text-lg font-bold">
+                    <span>Gesamt</span>
+                    <span>{((totalCents + 490)/100).toFixed(2)} €</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <input type="number" min="1" value={it.quantity} onChange={(e)=> updateQuantity(it.productId, Number(e.target.value))} className="w-16 border p-1" />
-                  <button onClick={()=> removeItem(it.productId)} className="text-red-600">Entfernen</button>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={goToCheckout}
+                    className="w-full bg-black text-white py-4 px-6 rounded-full font-medium hover:bg-gray-800 transition-colors duration-200"
+                  >
+                    Zur Kasse gehen
+                  </button>
+                  <button
+                    onClick={clear}
+                    className="w-full bg-gray-200 text-gray-700 py-3 px-6 rounded-full font-medium hover:bg-gray-300 transition-colors duration-200"
+                  >
+                    Warenkorb leeren
+                  </button>
                 </div>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-4 font-bold">Zwischensumme: {(totalCents/100).toFixed(2)} EUR</div>
-          <div className="mt-2">Versand: 4.90 EUR</div>
-          <div className="mt-2 text-xl font-bold">Gesamt: {((totalCents+490)/100).toFixed(2)} EUR</div>
-          <div className="mt-4 flex gap-3">
-            <button onClick={checkoutStripe} className="px-4 py-2 bg-green-600 text-white rounded">Bezahle mit Stripe</button>
-            <button onClick={checkoutPayPal} className="px-4 py-2 bg-blue-600 text-white rounded">Bezahle mit PayPal</button>
-            <button onClick={clear} className="px-4 py-2 bg-gray-300">Leeren</button>
-          </div>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   )
 }
